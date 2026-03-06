@@ -1,0 +1,31 @@
+{
+    "name": "end-guardian",
+    "version": "1.0.0",
+    "description": "Secure environment variable validation library",
+    "main": "./src/index.js",
+    "exports": {
+        ".": {
+            "import": "./src/index.js",
+            "require": "./src/index.js"
+        }
+    },
+    "type": "module",
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "bin": {
+        "env-guardian": "./src/cli.js"
+    },
+    "scripts": {
+        "test": "node --test"
+    },
+    "keywords": [
+        "env",
+        "environment",
+        "variable",
+        "validation",
+        "security"
+    ],
+    "author": "",
+    "license": "MIT"
+}
