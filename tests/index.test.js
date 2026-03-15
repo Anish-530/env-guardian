@@ -1,32 +1,29 @@
-import { test } from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert';
 import { validateEnv } from '../src/validator.js';
+import { checkSecurity } from '../src/security.js';
 
-test('validates string correctly', () => {
-    const schema = { API_KEY: { type: 'string', required: true } };
-    const env = { API_KEY: 'secret123' };
-    const result = validateEnv(schema, env);
-    assert.strictEqual(result.API_KEY, 'secret123');
+test('Validator: Detects missing required variables', () => {
+    const schema = { PORT: { required: true } };
+    assert.throws(() => validateEnv(schema, {}), /Missing required environment variable/);
 });
 
-test('handles default values', () => {
-    const schema = { PORT: { type: 'number', default: 3000 } };
-    const result = validateEnv(schema, {});
-    assert.strictEqual(result.PORT, 3000);
+test('Validator: Applies default values', () => {
+    const schema = { HOST: { default: 'localhost' } };
+    const validated = validateEnv(schema, {});
+    assert.strictEqual(validated.HOST, 'localhost');
 });
 
-test('throws on missing required variable', () => {
-    const schema = { DATABASE_URL: { type: 'string', required: true } };
-    assert.throws(() => {
-        validateEnv(schema, {});
-    }, /Missing required environment variable: DATABASE_URL/);
+test('Validator: Enforces allowed values', () => {
+    const schema = { NODE_ENV: { allowedValues: ['development', 'production'] } };
+    assert.throws(() => validateEnv(schema, { NODE_ENV: 'testing' }), /Must be one of/);
 });
 
-test('validates boolean types', () => {
-    const schema = { DEBUG: { type: 'boolean' } };
-    let result = validateEnv(schema, { DEBUG: 'true' });
-    assert.strictEqual(result.DEBUG, true);
+test('Security: Detects prototype pollution keys', () => {
+    assert.throws(() => checkSecurity({ '__PROTO__': 'malicious' }), /potentially dangerous environment variable detected/i);
+});
 
-    result = validateEnv(schema, { DEBUG: '0' });
-    assert.strictEqual(result.DEBUG, false);
+test('Security: Masks sensitive error messages', () => {
+    const schema = { DB_PASSWORD: { type: 'number' } }; 
+    assert.throws(() => validateEnv(schema, { DB_PASSWORD: 'my_secret_password' }), /value masked for security/);
 });

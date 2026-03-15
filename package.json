@@ -1,5 +1,5 @@
 {
-    "name": "end-guardian",
+    "name": "env-guardian",
     "version": "1.0.0",
     "description": "Secure environment variable validation library",
     "main": "./src/index.js",
