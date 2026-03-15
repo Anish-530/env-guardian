@@ -22,4 +22,3 @@ yarn-debug.log*
 yarn-error.log*
 coverage/
 .nyc_output/
-to_be_implemented.md
