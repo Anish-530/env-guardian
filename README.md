@@ -1,10 +1,10 @@
-# 🛡️ env-guardian
+# 🛡️ @awish/env-guardian
 
 > A lightweight, zero-dependency, and highly secure environment variable validation library for Node.js.
 
-[![npm version](https://img.shields.io/npm/v/env-guardian.svg)](https://www.npmjs.com/package/env-guardian)
+[![npm version](https://img.shields.io/npm/v/@awish/env-guardian.svg)](https://www.npmjs.com/package/@awish/env-guardian)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node requirement](https://img.shields.io/node/v/env-guardian.svg)](https://nodejs.org/)
+[![Node requirement](https://img.shields.io/node/v/@awish/env-guardian.svg)](https://nodejs.org/)
 
 **env-guardian** enforces strict schemas on your `.env` files and runtime environment variables. It prevents prototype pollution, masks sensitive secrets from crash logs, and guarantees that your app never boots with missing or invalid configurations.
 
@@ -26,10 +26,8 @@
 To install the package, run the following command in your project directory:
 
 ```bash
-npm install env-guardian
+npm install @awish/env-guardian
 ```
-
-*(Note: If the package name is scoped, replace this with `npm install @your-username/env-guardian`)*
 
 ---
 
@@ -40,7 +38,7 @@ Create a validation schema and pass it to `loadAndValidate()`. If the validation
 ### 1. Basic Example
 
 ```javascript
-import { loadAndValidate } from 'env-guardian';
+import { loadAndValidate } from '@awish/env-guardian';
 
 // Define how your environment should look
 const schema = {
@@ -117,7 +115,7 @@ Want to validate your `.env` without writing any code? **env-guardian** includes
 
 2. Run the guardian:
 ```bash
-npx env-guardian
+npx @awish/env-guardian
 ```
 
 **Output:**
