@@ -1,5 +1,16 @@
 import { EnvValidationError } from "./errors.js";
 import { parseType } from "./types.js";
+import { isSensitiveKey, isWeakSecret, looksLikeSecret } from "./security.js";
+
+const checkSecrets = (key, value) => {
+    if (isSensitiveKey(key) && isWeakSecret(value)) {
+        console.warn(`⚠️ Weak secret detected for ${key}`)
+    }
+
+    if (looksLikeSecret(value)) {
+        console.warn(`⚠️ ${key} looks like a real secret`)
+    }
+};
 
 export const validateEnv = (schema, sourceEnv = process.env) => {
     const validated = {};
@@ -31,6 +42,8 @@ export const validateEnv = (schema, sourceEnv = process.env) => {
                 throw new Error(`Must be one of: ${rules.allowedValues.join(', ')}`);                
             }
             validated[key] = parsedValue;
+
+            checkSecrets(key, String(parsedValue));
         } catch (err) {
             errors.push(new EnvValidationError(`Invalid value for ${key}: ${err.message}`, key));
         }
