@@ -24,3 +24,25 @@ export const parseType = (value, type) => {
 
     throw new Error(`Unknown type: ${type}`)
 };
+
+export const generateTypeScriptTypes = (schema) => {
+    let tsContent = 'declare const env: {\n';
+
+    for (const [key, rules] of Object.entries(schema)) {
+        let tsType = 'string';
+
+        if (rules.type === 'number') {
+            tsType = 'number';
+        } else if (rules.type === 'boolean') {
+            tsType = 'boolean';
+        }
+
+        const isOptional = rules.required ? '' : '?';
+
+        tsContent += `  ${key}${isOptional}: ${tsType};\n`;
+    }
+
+    tsContent += '};\n\nexport default env;\n';
+
+    return tsContent;
+};

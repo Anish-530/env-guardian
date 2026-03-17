@@ -1,6 +1,6 @@
 {
     "name": "@awish/env-guardian",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "description": "Secure environment variable validation library",
     "main": "./src/index.js",
     "exports": {
@@ -13,17 +13,29 @@
     "engines": {
         "node": ">=18.0.0"
     },
-    "bin": "./src/cli.js",
+    "bin": {
+        "env-guardian": "./bin/env-guardian.js"
+    },
+    "files": [
+        "src/",
+        "bin/",
+        "README.md"
+    ],
     "scripts": {
         "test": "node --test"
     },
     "keywords": [
         "env",
+        "dotenv",
         "environment",
         "variable",
         "validation",
-        "security"
+        "security",
+        "typescript"
     ],
     "author": "",
-    "license": "MIT"
+    "license": "MIT",
+    "dependencies": {
+        "chalk": "^5.3.0"
+    }
 }

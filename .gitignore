@@ -26,3 +26,4 @@ coverage/
 # Misc
 to_be_imp.md
 test.js
+tests/
