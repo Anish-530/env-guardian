@@ -22,8 +22,3 @@ yarn-debug.log*
 yarn-error.log*
 coverage/
 .nyc_output/
-
-# Misc
-to_be_imp.md
-test.js
-tests/

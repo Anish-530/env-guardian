@@ -5,11 +5,11 @@ import { isSensitiveKey, isWeakSecret, looksLikeSecret } from "./security.js";
 
 const checkSecrets = (key, value) => {
     if (isSensitiveKey(key) && isWeakSecret(value)) {
-        console.warn(chalk.yellow(`⚠️  Weak secret detected for ${chalk.bold(key)}`));
+        console.warn(`⚠️ Weak secret detected for ${key}`);
     }
 
     if (looksLikeSecret(value)) {
-        console.warn(chalk.yellow(`⚠️  ${chalk.bold(key)} looks like a real secret`));
+        console.warn(`⚠️ ${key} looks like a real secret`);
     }
 };
 
