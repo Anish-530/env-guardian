@@ -1,6 +1,6 @@
 {
     "name": "sealenv",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "description": "Validate, type-check, and secure your environment variables — with prototype pollution detection, secret masking, and a CI-ready CLI.",
     "main": "./src/index.js",
     "exports": {
