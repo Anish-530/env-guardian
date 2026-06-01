@@ -6,6 +6,8 @@ import { validateEnv } from "./validator.js";
 import { checkSecurity } from "./security.js";
 import { generateTypeScriptTypes } from './types.js';
 
+export const version = '2.0.0';
+
 export const loadAndValidate = (schema, options = {}) => {
     const parsed = options.skipDotenv ? {} : parseEnvFile(options.path || '.env');
     const combinedEnv = { ...parsed, ...process.env };

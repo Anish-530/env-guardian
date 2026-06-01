@@ -1,0 +1,18 @@
+{
+  "PORT": {
+    "type": "number",
+    "required": true
+  },
+  "DB_URL": {
+    "type": "string",
+    "required": true
+  },
+  "JWT_SECRET": {
+    "type": "string",
+    "required": true
+  },
+  "API_KEY": {
+    "type": "string",
+    "required": true
+  }
+}

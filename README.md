@@ -1,145 +1,285 @@
-# 🛡️ @awish/env-guardian
+# 🔒 sealenv
 
-> A lightweight, highly secure environment variable validation library for Node.js.
+> **Validate, type-check, and secure your environment variables — zero dependencies on dotenv.**
 
-[![npm version](https://img.shields.io/npm/v/@awish/env-guardian.svg)](https://www.npmjs.com/package/@awish/env-guardian)
+[![npm version](https://img.shields.io/npm/v/sealenv.svg)](https://www.npmjs.com/package/sealenv)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Node requirement](https://img.shields.io/node/v/@awish/env-guardian.svg)](https://nodejs.org/)
-[![visitors](https://visitor-badge.laobi.icu/badge?page_id=https://github.com/Anish-530/env-guardian)](https://www.npmjs.com/package/@awish/env-guardian)
-
-**env-guardian** enforces strict schemas on your `.env` files and runtime environment variables. It actively prevents prototype pollution, masks sensitive secrets from crash logs, provides interactive CLI tools, and generates static TypeScript definitions.
-
----
-
-## ✨ Features (v1.1)
-
-- **🔒 Security First:** Actively scans for prototype pollution attempts (`__proto__`, `constructor`) and limits payload sizes to prevent memory DoS attacks.
-- **🤫 Secret Masking:** Automatically prevents sensitive keys (e.g., `PASSWORD`, `API_KEY`) from leaking in error traces and detects weak cryptographic strings.
-- **🛡️ Type Safety (TypeScript):** Validate at runtime, and easily generate `.d.ts` type definitions for your IDE.
-- **✅ Schema Validation:** Enforce `required` variables, apply `default` fallbacks, and restrict to `allowedValues`.
-- **💻 Interactive CLI:** A fully chalk-colored terminal diagnostic tool to verify environments directly from CI/CD pipelines.
+[![Node.js](https://img.shields.io/node/v/sealenv.svg)](https://nodejs.org/)
+[![CI](https://github.com/Anish-530/env-guardian/actions/workflows/ci.yml/badge.svg)](https://github.com/Anish-530/env-guardian/actions)
+[![npm bundle size](https://img.shields.io/bundlephobia/minzip/sealenv)](https://bundlephobia.com/package/sealenv)
 
 ---
 
-## 📦 Installation
+## Why sealenv?
 
-To install the package, run the following command in your project directory:
+Most env validators just check if variables exist. **sealenv** goes further:
+
+| Feature | sealenv | envalid | t3-env | zod (manual) |
+|---|:---:|:---:|:---:|:---:|
+| Schema validation | ✅ | ✅ | ✅ | ✅ |
+| Type coercion | ✅ | ✅ | ✅ | ✅ |
+| **Prototype pollution detection** | ✅ | ❌ | ❌ | ❌ |
+| **Secret masking in errors** | ✅ | ❌ | ❌ | ❌ |
+| **Weak secret warnings** | ✅ | ❌ | ❌ | ❌ |
+| **CI-ready CLI** | ✅ | ❌ | ❌ | ❌ |
+| **Auto-generate schema from .env** | ✅ | ❌ | ❌ | ❌ |
+| TypeScript generation | ✅ | ✅ | ✅ | ✅ |
+| Zero-config | ✅ | ✅ | ❌ | ❌ |
+| Lightweight (1 dep) | ✅ | ✅ | ❌ | ❌ |
+
+---
+
+## Quick Start
 
 ```bash
-npm install @awish/env-guardian
+npm install sealenv
 ```
+
+```javascript
+import { loadAndValidate } from 'sealenv';
+
+const env = loadAndValidate({
+  PORT: { type: 'port', required: true, default: 3000 },
+  DATABASE_URL: { type: 'url', required: true },
+  NODE_ENV: { type: 'string', allowedValues: ['development', 'production'] },
+});
+
+// env.PORT is a number, env.DATABASE_URL is a validated URL string
+```
+
+That's it. If anything is wrong, your app crashes immediately with a clear, actionable error — never leaking secrets.
 
 ---
 
-## 💻 Usage
+## Features
 
-Create a validation schema and pass it to `loadAndValidate()`. If the validation fails, it throws an early, descriptive error—preventing your app from running in a broken state.
+### 🔒 Security First
 
-### 1. Basic Example
+sealenv actively protects your application:
 
-```javascript
-import { loadAndValidate } from '@awish/env-guardian';
-
-// Define how your environment should look
-const schema = {
-  PORT: { 
-    type: 'number', 
-    required: true, 
-    default: 3000 
-  },
-  NODE_ENV: { 
-    type: 'string', 
-    allowedValues: ['development', 'staging', 'production'],
-    default: 'development'
-  },
-  SUPER_SECRET_KEY: { 
-    type: 'string', 
-    required: true 
-  },
-  ENABLE_FEATURE_X: { 
-    type: 'boolean', 
-    default: false 
-  }
-};
-
-// Validate! 
-// This automatically loads from '.env' by default and applies your schema
-const env = loadAndValidate(schema);
-
-// Your variables are now safely typed and guaranteed to be present
-console.log(typeof env.PORT); // "number"
-console.log(env.ENABLE_FEATURE_X); // true or false boolean
-```
-
-### 2. Error Handling & Secret Masking
-
-If a developer configured something incorrectly, `env-guardian` provides clear errors. However, it will **never** leak secrets in the stack trace. The system also proactively identifies architectural risks on load via console warnings:
+- **Prototype pollution detection** — blocks `__proto__`, `constructor`, and `prototype` keys in `.env` files and runtime
+- **Secret masking** — error messages for sensitive keys (passwords, tokens, API keys) never expose the actual value
+- **Weak secret warnings** — warns when secrets are too short or look like defaults
+- **Secret pattern detection** — recognizes GitHub tokens (`ghp_`), Stripe keys (`sk_live_`), AWS keys, PEM private keys, and more
 
 ```javascript
-// A developer accidentally typed `SUPER_SECRET_KEY=12345` instead of a strong password
-
 try {
   const env = loadAndValidate(schema);
 } catch (error) {
-  console.error(error.message); 
-  // Output: "Invalid value for SUPER_SECRET_KEY (value masked for security)"
+  console.error(error.message);
+  // "Invalid value for DB_PASSWORD (value masked for security)"
+  // ✅ The actual password never appears in logs or error trackers
 }
-
-// Console Warnings:
-// ⚠️  Weak secret detected for SUPER_SECRET_KEY
 ```
 
----
+### ✅ Rich Type Validation
 
-## 🛠️ Configuration Options
+Built-in validators for common patterns:
 
-The `loadAndValidate` method accepts an optional second argument for configuration:
+| Type | Validates | Returns |
+|---|---|---|
+| `string` | Any string | `string` |
+| `number` | Valid numbers | `number` |
+| `boolean` | `true/false`, `1/0`, `yes/no`, `on/off` | `boolean` |
+| `url` | Valid URLs (http, https) | `string` |
+| `port` | Integers 1–65535 | `number` |
+| `email` | Email format | `string` |
+| `json` | Valid JSON strings | `unknown` (parsed object) |
 
 ```javascript
-const env = loadAndValidate(schema, {
-  path: './config/.env.production', // Load a custom file path
-  skipDotenv: true,                 // Don't read from disk, just validate process.env
+const env = loadAndValidate({
+  PORT: { type: 'port', required: true },
+  API_URL: { type: 'url', required: true },
+  ADMIN_EMAIL: { type: 'email' },
+  FEATURE_FLAGS: { type: 'json', default: '{}' },
+  DEBUG: { type: 'boolean', default: false },
 });
 ```
 
----
+### 🛡️ Schema Rules
 
-## ⌨️ TypeScript Generation
-
-**env-guardian** can dynamically generate an `env.d.ts` file based on your runtime schema so your IDE possesses full IntelliSense auto-complete.
+Each variable supports:
 
 ```javascript
-import { createEnvTypes } from '@awish/env-guardian';
-
-const schema = { PORT: { type: 'number', required: true } };
-
-// Generates `env.d.ts` in your current working directory
-createEnvTypes(schema); 
+{
+  type: 'string',           // Type validator (see table above)
+  required: true,           // Fail if missing or empty
+  default: 'fallback',      // Applied when variable is undefined
+  allowedValues: ['a', 'b'] // Restrict to specific values
+}
 ```
 
 ---
 
-## 🖥 CLI Tool
+## CLI Tool
 
-Verify your `.env` configuration instantly via the terminal perfect for CI/CD pipelines (like GitHub Actions). Create a JSON schema file (`env-schema.json`), then run:
+Verify your environment directly from the terminal — perfect for CI/CD pipelines.
+
+### Validate
 
 ```bash
-npx @awish/env-guardian
+npx sealenv
 ```
 
-Outputs a cleanly formatted summary:
 ```text
-🛡️  ENV GUARDIAN v1.1
+🔒 sealenv v2.0
 =======================
 
-✅ Success: Environment configuration is valid and secure.
+✅ Success: Environment is valid and secure.
+   4 variables checked, 0 warnings.
+```
+
+### Generate Schema from .env
+
+Scan your existing `.env` file and auto-generate an `env-schema.json`:
+
+```bash
+npx sealenv --init
+```
+
+```text
+🔒 sealenv v2.0
+=======================
+
+✅ Generated env-schema.json with 4 variables.
+
+  Review the schema and adjust types/required fields as needed.
+  Then run npx sealenv to validate.
+```
+
+### Generate TypeScript Definitions
+
+```bash
+npx sealenv --types
+```
+
+Generates an `env.d.ts` file from your `env-schema.json` for IDE autocompletion.
+
+---
+
+## API Reference
+
+### `loadAndValidate(schema, options?)`
+
+Loads `.env`, merges with `process.env`, runs security checks, and validates.
+
+```javascript
+import { loadAndValidate } from 'sealenv';
+
+const env = loadAndValidate(schema, {
+  path: './config/.env.production', // Custom .env path (default: '.env')
+  skipDotenv: true,                 // Only validate process.env
+});
+```
+
+### `validateEnv(schema, sourceEnv?)`
+
+Validates an env object without loading from disk. Useful for testing.
+
+```javascript
+import { validateEnv } from 'sealenv';
+
+const env = validateEnv(schema, { PORT: '3000', NODE_ENV: 'production' });
+```
+
+### `createEnvTypes(schema, outputDir?)`
+
+Generates TypeScript definitions programmatically.
+
+```javascript
+import { createEnvTypes } from 'sealenv';
+
+createEnvTypes(schema); // Writes env.d.ts to cwd
+```
+
+### `parseDotenv(filePath)`
+
+Low-level parser with security checks built in.
+
+```javascript
+import { parseDotenv } from 'sealenv';
+
+const vars = parseDotenv('.env');
+```
+
+### Error Classes
+
+```javascript
+import { EnvValidationError, EnvSecurityError } from 'sealenv';
 ```
 
 ---
 
-## 🧪 Testing
+## Real-World Example: Express
 
-To run the internal test suite:
+```javascript
+// config.js
+import { loadAndValidate } from 'sealenv';
+
+export const env = loadAndValidate({
+  PORT: { type: 'port', required: true, default: 3000 },
+  NODE_ENV: { type: 'string', allowedValues: ['development', 'staging', 'production'], default: 'development' },
+  DATABASE_URL: { type: 'url', required: true },
+  JWT_SECRET: { type: 'string', required: true },
+  CORS_ORIGIN: { type: 'url', default: 'http://localhost:3000' },
+  LOG_LEVEL: { type: 'string', allowedValues: ['debug', 'info', 'warn', 'error'], default: 'info' },
+});
+```
+
+```javascript
+// server.js
+import express from 'express';
+import { env } from './config.js';
+
+const app = express();
+
+app.listen(env.PORT, () => {
+  console.log(`Server running on port ${env.PORT} in ${env.NODE_ENV} mode`);
+});
+```
+
+If `DATABASE_URL` is missing or `JWT_SECRET` is weak, the server won't start — and the error won't leak your secret.
+
+---
+
+## GitHub Actions
+
+Add sealenv to your CI pipeline:
+
+```yaml
+- name: Validate environment
+  run: npx sealenv
+  env:
+    PORT: 3000
+    DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    JWT_SECRET: ${{ secrets.JWT_SECRET }}
+```
+
+---
+
+## Migrating from @awish/env-guardian
+
+If you were using the v1 package:
+
+```bash
+npm uninstall @awish/env-guardian
+npm install sealenv
+```
+
+```diff
+-import { loadAndValidate } from '@awish/env-guardian';
++import { loadAndValidate } from 'sealenv';
+```
+
+New in v2:
+- 4 new types: `url`, `port`, `email`, `json`
+- CLI: `--init` and `--types` flags
+- Full TypeScript definitions shipped
+- Expanded secret detection (GitHub, Stripe, AWS patterns)
+
+---
+
+## Testing
 
 ```bash
 npm test
@@ -147,6 +287,18 @@ npm test
 
 ---
 
-## 📄 License
+## Contributing
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Contributions are welcome! Please open an issue first to discuss what you'd like to change.
+
+1. Fork the repo
+2. Create your branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## License
+
+[MIT](./LICENSE) © Anish Nayak
