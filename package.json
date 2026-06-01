@@ -49,11 +49,11 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/Anish-530/env-guardian.git"
+        "url": "git+https://github.com/Anish-530/sealenv.git"
     },
-    "homepage": "https://github.com/Anish-530/env-guardian#readme",
+    "homepage": "https://github.com/Anish-530/sealenv#readme",
     "bugs": {
-        "url": "https://github.com/Anish-530/env-guardian/issues"
+        "url": "https://github.com/Anish-530/sealenv/issues"
     },
     "dependencies": {
         "chalk": "^5.3.0"
