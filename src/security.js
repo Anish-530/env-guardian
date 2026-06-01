@@ -1,7 +1,10 @@
 import chalk from "chalk";
 import { EnvSecurityError } from "./errors.js";
 
-const SENSITIVE_KEYWORDS = ['SECRET', 'TOKEN', 'PASSWORD', 'API_KEY', 'PRIVATE_KEY'];
+export const SENSITIVE_KEYWORDS = [
+    'SECRET', 'TOKEN', 'PASSWORD', 'API_KEY', 'PRIVATE_KEY',
+    'SECRET_KEY', 'CREDENTIALS', 'CREDENTIAL', 'AUTH'
+];
 
 export const DANGEROUS_KEYS = ['__proto__', 'constructor', 'prototype'];
 
@@ -35,9 +38,21 @@ export const isWeakSecret = (value) => {
 export const looksLikeSecret = (value) => {
     if (typeof value !== 'string') return false;
 
+    // Common API key prefixes
     if (value.startsWith('sk-') || value.startsWith('pk-')) return true;
+    if (value.startsWith('sk_live_') || value.startsWith('pk_live_')) return true;
+    if (value.startsWith('sk_test_') || value.startsWith('pk_test_')) return true;
+
+    // GitHub tokens
+    if (value.startsWith('ghp_') || value.startsWith('gho_') || value.startsWith('ghs_')) return true;
+
+    // AWS access keys (start with AKIA)
+    if (/^AKIA[0-9A-Z]{16}$/.test(value)) return true;
+
+    // PEM private keys
     if (value.includes('-----BEGIN')) return true;
 
+    // Long random strings (likely secrets/tokens)
     const isLongRandomString = value.length >= 20 && !/\s/.test(value);
     if (isLongRandomString) return true;
 

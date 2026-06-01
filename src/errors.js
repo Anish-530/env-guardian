@@ -1,9 +1,11 @@
+import { SENSITIVE_KEYWORDS } from './security.js';
+
 export class EnvValidationError extends Error {
     constructor(message, property) {
         let safeMessage = message;
 
-        if(property && /PASSWORD|TOKEN|API_KEY/i.test(property)) {
-            safeMessage = `Invalid value for ${property} (value masked for security)`
+        if (property && SENSITIVE_KEYWORDS.some(kw => property.toUpperCase().includes(kw))) {
+            safeMessage = `Invalid value for ${property} (value masked for security)`;
         }
 
         super(safeMessage);
